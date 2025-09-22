@@ -132,10 +132,10 @@ export function Settings() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm">Connection Status</span>
-                    <Badge variant="destructive">Disconnected</Badge>
+                    <Badge variant="default">True</Badge>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm">Firmware Version</span>
+                    ç<span className="text-sm">Firmware Version</span>
                     <span className="text-sm font-medium">v1.2.3</span>
                   </div>
                   <div className="flex justify-between">

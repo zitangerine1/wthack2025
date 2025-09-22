@@ -17,12 +17,16 @@ import {
   X,
   Sun,
   Moon,
+  Wifi,
 } from "lucide-react";
+import { getCurrentReading } from "@/lib/mockData";
 
 export function Layout() {
   const location = useLocation();
   const currentPath = location.pathname;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isConnected, setIsConnected] = useState(true);
+  const [currentReading, setCurrentReading] = useState(getCurrentReading());
   const { theme, toggleTheme } = useTheme();
 
   const navigationItems = [
@@ -52,6 +56,24 @@ export function Layout() {
       document.body.classList.remove("sidebar-open");
     };
   }, [isSidebarOpen]);
+
+  // Simulate connection after 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsConnected(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Update sensor data every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentReading(getCurrentReading());
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -106,10 +128,21 @@ export function Layout() {
 
               {/* Connection Status */}
               <div className="flex items-center space-x-1 lg:space-x-2">
-                <WifiOff className="h-3 w-3 lg:h-4 lg:w-4 text-destructive" />
-                <Badge variant="destructive" className="text-xs">
-                  <span className="hidden sm:inline">Disconnected</span>
-                  <span className="sm:hidden">Off</span>
+                {isConnected ? (
+                  <Wifi className="h-3 w-3 lg:h-4 lg:w-4 text-green-500" />
+                ) : (
+                  <WifiOff className="h-3 w-3 lg:h-4 lg:w-4 text-destructive" />
+                )}
+                <Badge
+                  variant={isConnected ? "secondary" : "destructive"}
+                  className="text-xs"
+                >
+                  <span className="hidden sm:inline">
+                    {isConnected ? "Connected" : "Disconnected"}
+                  </span>
+                  <span className="sm:hidden">
+                    {isConnected ? "On" : "Off"}
+                  </span>
                 </Badge>
               </div>
 
@@ -117,11 +150,13 @@ export function Layout() {
               <Card className="p-1 lg:p-2">
                 <div className="flex items-center space-x-1 lg:space-x-2 text-xs lg:text-sm">
                   <Heart className="h-3 w-3 lg:h-4 lg:w-4 text-red-500" />
-                  <span className="hidden sm:inline">72 BPM</span>
-                  <span className="sm:hidden">72</span>
+                  <span className="hidden sm:inline">
+                    {currentReading.heartRate} BPM
+                  </span>
+                  <span className="sm:hidden">{currentReading.heartRate}</span>
                   <Separator orientation="vertical" className="h-3 lg:h-4" />
                   <Thermometer className="h-3 w-3 lg:h-4 lg:w-4 text-blue-500" />
-                  <span>22°C</span>
+                  <span>{currentReading.temperature}°C</span>
                 </div>
               </Card>
             </div>
@@ -133,9 +168,12 @@ export function Layout() {
         <div className="flex gap-6 relative">
           {/* Mobile sidebar overlay */}
           {isSidebarOpen && (
-            <div
+            <button
+              type="button"
               className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
               onClick={closeSidebar}
+              onKeyDown={(e) => e.key === "Escape" && closeSidebar()}
+              aria-label="Close sidebar"
             />
           )}
 
@@ -193,11 +231,23 @@ export function Layout() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Heating</span>
-                    <Badge variant="secondary">Off</Badge>
+                    <Badge
+                      variant={
+                        currentReading.isHeating ? "default" : "secondary"
+                      }
+                    >
+                      {currentReading.isHeating ? "Active" : "Off"}
+                    </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Cooling</span>
-                    <Badge variant="secondary">Off</Badge>
+                    <Badge
+                      variant={
+                        currentReading.isCooling ? "default" : "secondary"
+                      }
+                    >
+                      {currentReading.isCooling ? "Active" : "Off"}
+                    </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Target Temp</span>
